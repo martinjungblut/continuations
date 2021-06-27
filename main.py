@@ -1,69 +1,42 @@
 #!/usr/bin/env python3
 
-
-class Stop(Exception):
-    pass
+import continuations
 
 
-class Continuation(Exception):
-    def __init__(self, callback, *args, **kwargs):
-        self.callback, self.args, self.kwargs = callback, args, kwargs
-
-    def __call__(self):
-        self.callback(*self.args, **self.kwargs)
-
-
-def stop():
-    raise Stop
-
-
-def call_continuation(continuation, *args, **kwargs):
-    raise Continuation(continuation, *args, **kwargs)
-
-
-def call_with_tco(callback):
-    while True:
-        try:
-            callback()
-        except Continuation as c:
-            callback = c
-        except Stop:
-            break
-
-
-def add1(n, limit, continuation):
-    print(n, limit)
-    if n < limit:
-        call_continuation(n + 1, limit, continuation)
-    else:
-        stop()
-
-
-def with_cps(callback):
-    def cps(*args, **kwargs):
-        current = lambda: callback(*args, **kwargs)
-
-        while True:
-            try:
-                current()
-            except Continuation as c:
-                current = c
-            except Stop:
-                break
-
-    return cps
-
-
-@with_cps
-def fibonacci(a, b, counter, limit, continuation):
-    print(f"Current number: {b}")
-
+@continuations.cps
+def fibonacci_cps(a, b, counter, limit, capture):
     if counter < limit:
-        call_continuation(continuation, b, b + a, counter + 1, limit, continuation)
+        continuations.call(fibonacci_cps, b, b + a, counter + 1, limit, capture)
     else:
-        stop()
+        continuations.call(capture, b)
+
+
+def fibonacci(n):
+    capture = continuations.Capture()
+    fibonacci_cps(0, 1, 1, n, capture)
+    return capture.value
+
+
+def classic_fibonacci(a, b, counter, limit):
+    if counter < limit:
+        return classic_fibonacci(b, b + a, counter + 1, limit)
+    else:
+        return b
+
+
+def iterative_fibonacci(limit):
+    a, b, counter = 0, 1, 1
+    while counter < limit:
+        c = b + a
+        a, b, counter = b, c, counter + 1
+    return b
 
 
 
-# call_with_tco(lambda: fibonacci(1, 1, 1, 5000, fibonacci))
-fibonacci(1, 1, 1, 5000, fibonacci)
+# print("100th fibonacci number is: ", fibonacci(100))
+print("5000th fibonacci number is: ", fibonacci(100_000))
+# print("----------")
+
+# print("10th fibonacci number is: ", classic_fibonacci(0, 1, 1, 1000))
+# print("5000th fibonacci number is: ", classic_fibonacci(0, 1, 1, 5000))
+# print("5000th fibonacci number is: ", classic_fibonacci(0, 1, 1, 5000))
