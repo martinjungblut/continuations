@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 
 import continuations
-from continuations import Continuation
 
 
 def fibonacci(n):
-    @continuations.cps
-    def fibonacci_cps(a, b, counter, limit, capture):
+    @continuations.enable
+    def cps_fibonacci(a, b, counter, limit, capture):
         if counter < limit:
-            return Continuation(fibonacci_cps, b, b + a, counter + 1, limit, capture)
+            return continuations.new(cps_fibonacci, b, b + a, counter + 1, limit, capture)
         else:
-            return Continuation(capture, b)
+            return continuations.new(capture, b)
 
     capture = continuations.Capture()
-    fibonacci_cps(0, 1, 1, n, capture)
+    cps_fibonacci(0, 1, 1, n, capture)
     return capture.value
 
 
@@ -32,12 +31,11 @@ def iterative_fibonacci(limit):
     return b
 
 
-print("1_000_000th fibonacci number...")
-iterative_fibonacci(1_000_000)
+# print("1_000_000th fibonacci number...")
+# iterative_fibonacci(1_000_000)
 
 # print("1_000_000th fibonacci number...")
 # fibonacci(1_000_000)
 
-# print("10th fibonacci number is: ", classic_fibonacci(0, 1, 1, 1000))
-# print("5000th fibonacci number is: ", classic_fibonacci(0, 1, 1, 5000))
-# print("5000th fibonacci number is: ", classic_fibonacci(0, 1, 1, 5000))
+print("100_000th fibonacci number...")
+print(fibonacci(100_000))

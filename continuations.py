@@ -13,6 +13,10 @@ class Continuation:
             return self._callable(*self.args, **self.kwargs)
 
 
+def new(_callable, *args, **kwargs):
+    return Continuation(_callable, *args, **kwargs)
+
+
 class CPSError(ValueError):
     pass
 
@@ -21,7 +25,7 @@ class Stop(Exception):
     pass
 
 
-def cps(callback):
+def enable(callback):
     err = CPSError("Last positional argument must be a continuation.")
     callback._original_callable = callback
 
