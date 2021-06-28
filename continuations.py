@@ -2,18 +2,15 @@ from contextlib import suppress
 from functools import wraps
 
 
-class Continuation(Exception):
+class Continuation:
     def __init__(self, _callable, *args, **kwargs):
         self._callable, self.args, self.kwargs = _callable, args, kwargs
 
     def __call__(self):
-        self._callable(*self.args, **self.kwargs)
-
-
-def call(continuation, *args, **kwargs):
-    raise Continuation(
-        getattr(continuation, "_original_callable", continuation), *args, **kwargs
-    )
+        try:
+            return self._callable._original_callable(*self.args, **self.kwargs)
+        except AttributeError:
+            return self._callable(*self.args, **self.kwargs)
 
 
 class CPSError(ValueError):
@@ -22,10 +19,6 @@ class CPSError(ValueError):
 
 class Stop(Exception):
     pass
-
-
-def stop(*args, **kwargs):
-    raise Stop
 
 
 def cps(callback):
@@ -41,12 +34,9 @@ def cps(callback):
             raise err
 
         current = lambda: callback(*args, **kwargs)
-
         while True:
             try:
-                current()
-            except Continuation as c:
-                current = c
+                current = current()
             except Stop:
                 break
 
@@ -60,4 +50,4 @@ class Capture:
 
         self.args, self.kwargs = args, kwargs
 
-        call(stop)
+        raise Stop
