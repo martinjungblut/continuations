@@ -34,8 +34,8 @@ def iterative_fibonacci(limit):
 # print("1_000_000th fibonacci number...")
 # iterative_fibonacci(1_000_000)
 
-# print("1_000_000th fibonacci number...")
-# fibonacci(1_000_000)
+print("1_000_000th fibonacci number...")
+fibonacci(1_000_000)
 
-print("100_000th fibonacci number...")
-print(fibonacci(100_000))
+# print("100_000th fibonacci number...")
+# print(fibonacci(100_000))
