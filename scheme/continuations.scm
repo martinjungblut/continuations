@@ -23,27 +23,27 @@
 
 ;-----
 
-(define evaluate
-  (lambda (expr)
-    (eval expr (interaction-environment))))
+(define add1 (lambda (n k) (k (+ 1 n))))
+(define mul5 (lambda (n k) (k (* 5 n))))
 
-(define lazy-add1
-  (lambda (n expr)
-    (let ((continuation (evaluate expr)))
-      (lambda args
-        (if (>= (length args) 1)
-            (continuation (+ 1 (car args)))
-            (continuation (+ 1 n)))))))
+(define with-cc
+  (lambda (value expr continuation)
+    (begin
+      (expr continuation)
+      (continuation value))))
 
-(define lazy-mul2
-  (lambda (n expr)
-    (let ((continuation (evaluate expr)))
-      (lambda args
-        (if (>= (length args) 1)
-            (continuation (* 2 (car args)))
-            (continuation (* 2 n)))))))
-
-(((lazy-add1 13 '(lambda (a) (lazy-mul2 a '(lambda (b) b))))))
+(define first-continuation #f)
+(define second-continuation #f)
+(with-cc 10
+  (lambda (cont) (set! first-continuation cont))
+  (lambda (a)
+    (add1 a (lambda (b)
+              (begin
+                (with-cc b
+                  (lambda (cont) (set! second-continuation cont))
+                  (lambda (c) (mul5 c (lambda (d) d)))))))))
+(first-continuation 0)
+(second-continuation 3)
 
 ;-----
 
