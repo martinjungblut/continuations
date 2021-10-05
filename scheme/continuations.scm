@@ -37,7 +37,10 @@
 ((with-cc
     (lambda (cont) (set! captured-continuation cont))
   (lambda (a)
-    (add1 a (lambda (b) (mul5 b (lambda (c) (display c))))))) 10)
+    (add1 a (lambda (b) (mul5 b (lambda (c) c)))))) 10)
+
+(captured-continuation 3)
+(captured-continuation 4)
 
 ;-----
 
