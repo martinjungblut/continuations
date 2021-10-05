@@ -2,11 +2,11 @@
 
 
 def add1(n, k):
-    return k(n + 1)
+    k(n + 1)
 
 
 def mul5(n, k):
-    return k(n * 5)
+    k(n * 5)
 
 
 def with_cc(capture_continuation, continuation):
@@ -14,14 +14,17 @@ def with_cc(capture_continuation, continuation):
     return continuation
 
 
-captured_continuation = None
+class ContinuationCapture:
+    def __init__(self):
+        self.continuation = None
 
-def capture(cont):
-    global captured_continuation
-    captured_continuation = cont
+    def __call__(self, continuation):
+        self.continuation = continuation
 
 
-print(with_cc(capture, lambda a: add1(a, lambda a: mul5(a, lambda a: a)))(10))
+capture = ContinuationCapture()
+with_cc(capture, lambda a: add1(a, lambda b: mul5(b, lambda c: print(c))))(10)
 
-print(captured_continuation(3))
-print(captured_continuation(4))
+
+capture.continuation(3)
+capture.continuation(4)
