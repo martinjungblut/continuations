@@ -4,18 +4,24 @@ import "fmt"
 
 type continuation func(interface{})
 
-func withcc(capture func(continuation), cont continuation) continuation {
-	capture(cont)
+func withcc(capt *capture, cont continuation) continuation {
+	capt.set(cont)
 	return cont
 }
 
+type capture struct {
+	captured continuation
+}
+
+func (c *capture) set(cont continuation) {
+	c.captured = cont
+}
+
+func (c capture) call(input interface{}) {
+	c.captured(input)
+}
+
 func main() {
-	var cont continuation = nil
-
-	capture := func(m continuation) {
-		cont = m
-	}
-
 	add1 := func(v interface{}, k func(interface{})) {
 		k(v.(int) + 1)
 	}
@@ -24,13 +30,15 @@ func main() {
 		k(v.(int) * 5)
 	}
 
-	withcc(capture, func(a interface{}) {
+	capt := new(capture)
+
+	withcc(capt, func(a interface{}) {
 		add1(a, func(b interface{}) {
 			mul5(b, func(c interface{}) {
 				fmt.Printf("%v\n", c)
 			})
 		})
-	})(10)
+	})(12)
 
-	cont(7)
+	capt.call(7)
 }
