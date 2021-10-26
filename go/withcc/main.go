@@ -2,15 +2,15 @@ package main
 
 import "fmt"
 
-type continuation func(interface{})
+type continuation func(...interface{})
 
 func (c *continuation) set(cont continuation) {
 	*c = cont
 }
 
-func (c continuation) call(input interface{}) {
+func (c continuation) call(input ...interface{}) {
 	if c != nil {
-		c(input)
+		c(input...)
 	}
 }
 
@@ -24,37 +24,37 @@ func withcc(capture *continuation, cont continuation) continuation {
 }
 
 func main() {
-	add1 := func(v interface{}, k func(interface{})) {
-		k(v.(int) + 1)
+	add1 := func(k func(...interface{}), args ...interface{}) {
+		k(args[0].(int) + 1)
 	}
 
-	mul5 := func(v interface{}, k func(interface{})) {
-		k(v.(int) * 5)
+	mul5 := func(k func(...interface{}), args ...interface{}) {
+		k(args[0].(int) * 5)
 	}
 
-	capture := NewCapture()
+	firstCapture := NewCapture()
 
-	withcc(capture, func(a interface{}) {
-		add1(a, func(b interface{}) {
-			mul5(b, func(c interface{}) {
-				fmt.Printf("%v\n", c)
-			})
-		})
+	withcc(firstCapture, func(a ...interface{}) {
+		add1(func(b ...interface{}) {
+			mul5(func(c ...interface{}) {
+				fmt.Printf("%v\n", c[0])
+			}, b...)
+		}, a...)
 	})(12)
 
-	capture.call(10)
-	capture.call(3)
-	capture.call(4)
+	firstCapture.call(10)
+	firstCapture.call(3)
+	firstCapture.call(4)
 
 	fmt.Println("-----")
 
-	scapture := NewCapture()
+	secondCapture := NewCapture()
 
-	add1(3, withcc(scapture, func(b interface{}) {
-		mul5(b, func(c interface{}) {
-			fmt.Printf("%v\n", c)
-		})
-	}))
+	add1(withcc(secondCapture, func(b ...interface{}) {
+		mul5(func(c ...interface{}) {
+			fmt.Printf("%v\n", c[0])
+		}, b...)
+	}), 3)
 
-	scapture.call(10)
+	secondCapture.call(10)
 }
