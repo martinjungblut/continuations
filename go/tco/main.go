@@ -2,14 +2,16 @@ package main
 
 import "fmt"
 
-func whatever(args ...interface{}) {
-	fmt.Printf("Length: %v\n", len(args))
-
-	for _, arg := range args {
-		fmt.Printf("%v\n", arg)
+func classicFib(a uint64, b uint64, counter uint64, limit uint64) uint64 {
+	if counter > limit {
+		return a
+	} else if counter == limit {
+		return b
+	} else {
+		return classicFib(b, a+b, counter+1, limit)
 	}
 }
 
 func main() {
-	whatever(1, 2, 3)
+	fmt.Printf("%v\n", classicFib(0, 1, 1, 5_000_000))
 }
