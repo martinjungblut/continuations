@@ -60,6 +60,6 @@ func improvedFib(a uint64, b uint64, counter uint64, limit uint64) uint64 {
 }
 
 func main() {
-	fmt.Printf("%v\n", classicFib(0, 1, 1, 8_000_000))
+	// fmt.Printf("%v\n", classicFib(0, 1, 1, 8_000_000))
 	fmt.Printf("%v\n", improvedFib(0, 1, 1, 8_000_000))
 }

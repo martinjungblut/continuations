@@ -37,18 +37,11 @@ def iterative_fibonacci(limit):
     return b
 
 
-for i in range(0, 10):
-    print(iterative_fibonacci(i))
-    print(classic_fibonacci(0, 1, 1, i))
-    print(fibonacci(i))
-    print("-" * 10)
+# print("500.000th fibonacci number (iterative_fibonacci)...")
+print(iterative_fibonacci(500_000))
 
+# print("50000th fibonacci number (fibonacci)...")
+# print(fibonacci(500_000))
 
-# print("5_000th fibonacci number...")
-# print(iterative_fibonacci(5_000))
-
-# print("5_000th fibonacci number...")
-# print(fibonacci(5_000))
-
-# print("5_000th fibonacci number...")
+# print("5000th fibonacci number (classic_fibonacci)...")
 # print(classic_fibonacci(0, 1, 1, 5_000))
