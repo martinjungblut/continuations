@@ -34,6 +34,7 @@ func main() {
 
 	firstCapture := NewCapture()
 
+	// prints 65
 	withcc(firstCapture, func(a ...interface{}) {
 		add1(func(b ...interface{}) {
 			mul5(func(c ...interface{}) {
@@ -42,19 +43,7 @@ func main() {
 		}, a...)
 	})(12)
 
-	firstCapture.call(10)
-	firstCapture.call(3)
-	firstCapture.call(4)
-
-	fmt.Println("-----")
-
-	secondCapture := NewCapture()
-
-	add1(withcc(secondCapture, func(b ...interface{}) {
-		mul5(func(c ...interface{}) {
-			fmt.Printf("%v\n", c[0])
-		}, b...)
-	}), 3)
-
-	secondCapture.call(10)
+	firstCapture.call(10) // prints 55
+	firstCapture.call(3)  // prints 20
+	firstCapture.call(4)  // prints 25
 }
