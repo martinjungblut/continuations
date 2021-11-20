@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 
-import continuations
+from continuations import Capture, Continuation, enable_cps_tco
 
 
 def fibonacci(n):
-    @continuations.enable
+    @enable_cps_tco
     def cps_fibonacci(a, b, counter, limit, capture):
         if limit == 0:
-            return continuations.new(capture, 0)
+            return Continuation(capture, 0)
         elif counter < limit:
-            return continuations.new(cps_fibonacci, b, b + a, counter + 1, limit, capture)
+            return Continuation(cps_fibonacci, b, b + a, counter + 1, limit, capture)
         else:
-            return continuations.new(capture, b)
+            return Continuation(capture, b)
 
-    capture = continuations.Capture()
+    capture = Capture()
     cps_fibonacci(0, 1, 1, n, capture)
     return capture.value
 
 
-def classic_fibonacci(a, b, counter, limit):
+def recursive_fibonacci(a, b, counter, limit):
     if limit == 0:
         return 0
     elif counter < limit:
-        return classic_fibonacci(b, b + a, counter + 1, limit)
+        return recursive_fibonacci(b, b + a, counter + 1, limit)
     else:
         return b
 
@@ -37,11 +37,11 @@ def iterative_fibonacci(limit):
     return b
 
 
-# print("500.000th fibonacci number (iterative_fibonacci)...")
-print(iterative_fibonacci(500_000))
+print("Iterative")
+print(iterative_fibonacci(5_000))
 
-# print("50000th fibonacci number (fibonacci)...")
-# print(fibonacci(500_000))
+print("CPS-based TCO")
+print(fibonacci(5_000))
 
-# print("5000th fibonacci number (classic_fibonacci)...")
-# print(classic_fibonacci(0, 1, 1, 5_000))
+# print("Standard recursion")
+# print(recursive_fibonacci(0, 1, 1, 5_000))

@@ -2,41 +2,35 @@ from contextlib import suppress
 from functools import wraps
 
 
+class Stop(Exception):
+    pass
+
+
+class Capture:
+    def __call__(self, *args, **kwargs):
+        with suppress(IndexError):
+            self.value = args[0]
+        self.args, self.kwargs = args, kwargs
+
+        raise Stop
+
+
 class Continuation:
     def __init__(self, _callable, *args, **kwargs):
         self._callable, self.args, self.kwargs = _callable, args, kwargs
 
     def __call__(self):
         try:
-            return self._callable._original_callable(*self.args, **self.kwargs)
+            return self._callable._unwrapped(*self.args, **self.kwargs)
         except AttributeError:
             return self._callable(*self.args, **self.kwargs)
 
 
-def new(_callable, *args, **kwargs):
-    return Continuation(_callable, *args, **kwargs)
-
-
-class CPSError(ValueError):
-    pass
-
-
-class Stop(Exception):
-    pass
-
-
-def enable(callback):
-    err = CPSError("Last positional argument must be a continuation.")
-    callback._original_callable = callback
+def enable_cps_tco(callback):
+    callback._unwrapped = callback
 
     @wraps(callback)
     def with_cps(*args, **kwargs):
-        try:
-            if not callable(args[-1]):
-                raise err
-        except IndexError:
-            raise err
-
         current = lambda: callback(*args, **kwargs)
         while True:
             try:
@@ -45,13 +39,3 @@ def enable(callback):
                 break
 
     return with_cps
-
-
-class Capture:
-    def __call__(self, *args, **kwargs):
-        with suppress(IndexError):
-            self.value = args[0]
-
-        self.args, self.kwargs = args, kwargs
-
-        raise Stop
