@@ -10,17 +10,14 @@ class Continuation:
 
 
 def enable_tco(callback):
-    def recurse(*args, **kwargs):
-        return Continuation(callback, *args, **kwargs)
-
-    callback.recurse = recurse
+    callback.recurse = lambda *args, **kwargs: Continuation(callback, *args, **kwargs)
 
     @wraps(callback)
-    def with_cps(*args, **kwargs):
+    def with_tco(*args, **kwargs):
         current = lambda: callback(*args, **kwargs)
         while True:
             current = current()
             if not isinstance(current, Continuation):
                 return current
 
-    return with_cps
+    return with_tco
