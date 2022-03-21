@@ -2,45 +2,39 @@ package main
 
 import "fmt"
 
-type continuation func(...interface{})
-
-func (c *continuation) set(cont continuation) {
-	*c = cont
+type continuation[T any] struct {
+	f func(...T)
 }
 
-func (c continuation) call(input ...interface{}) {
-	if c != nil {
-		c(input...)
+func (c continuation[T]) call(input ...T) {
+	if c.f != nil {
+		c.f(input...)
 	}
 }
 
-func NewCapture() *continuation {
-	return new(continuation)
-}
-
-func withcc(capture *continuation, cont continuation) continuation {
-	capture.set(cont)
-	return cont
+func withcc[T any](c *continuation[T], f func(...T)) func(...T) {
+	c.f = f
+	return f
 }
 
 func main() {
-	add1 := func(k func(...interface{}), args ...interface{}) {
-		k(args[0].(int) + 1)
+	add1 := func(cont func(...int), args ...int) {
+		cont(args[0] + 1)
 	}
 
-	mul5 := func(k func(...interface{}), args ...interface{}) {
-		k(args[0].(int) * 5)
+	mul5 := func(cont func(...int), args ...int) {
+		cont(args[0] * 5)
 	}
 
-	firstCapture := NewCapture()
+	firstCapture := new(continuation[int])
 
 	// prints 65
-	withcc(firstCapture, func(a ...interface{}) {
-		add1(func(b ...interface{}) {
-			mul5(func(c ...interface{}) {
-				fmt.Printf("%v\n", c[0])
-			}, b...)
-		}, a...)
+	withcc[int](firstCapture, func(outerParams ...int) {
+		add1(func(add1Results ...int) {
+			mul5(func(mul5Results ...int) {
+				fmt.Printf("%v\n", mul5Results[0])
+			}, add1Results...)
+		}, outerParams...)
 	})(12)
 
 	firstCapture.call(10) // prints 55
