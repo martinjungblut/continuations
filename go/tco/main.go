@@ -12,9 +12,9 @@ func classicFib(a uint64, b uint64, counter uint64, limit uint64) uint64 {
 	}
 }
 
-type continuation struct {
-	funcref func(...interface{}) continuation
-	args    []interface{}
+type continuation[T any] struct {
+	funcref func(...T) continuation[T]
+	args    []T
 }
 
 func NewContinuation(funcref func(...interface{}) continuation, args ...interface{}) continuation {

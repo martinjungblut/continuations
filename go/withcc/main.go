@@ -26,10 +26,10 @@ func main() {
 		cont(args[0] * 5)
 	}
 
-	firstCapture := new(continuation[int])
+	capturedContinuation := new(continuation[int])
 
 	// prints 65
-	withcc[int](firstCapture, func(outerParams ...int) {
+	withcc[int](capturedContinuation, func(outerParams ...int) {
 		add1(func(add1Results ...int) {
 			mul5(func(mul5Results ...int) {
 				fmt.Printf("%v\n", mul5Results[0])
@@ -37,7 +37,7 @@ func main() {
 		}, outerParams...)
 	})(12)
 
-	firstCapture.call(10) // prints 55
-	firstCapture.call(3)  // prints 20
-	firstCapture.call(4)  // prints 25
+	capturedContinuation.call(10) // prints 55
+	capturedContinuation.call(3)  // prints 20
+	capturedContinuation.call(4)  // prints 25
 }
