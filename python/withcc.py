@@ -9,7 +9,7 @@ def mul5(n, k):
     k(n * 5)
 
 
-def with_cc(capture_continuation, continuation):
+def withcc(capture_continuation, continuation):
     capture_continuation(continuation)
     return continuation
 
@@ -27,7 +27,7 @@ capture = ContinuationCapture()
 # same as add1(12, lambda a: mul5(a, print))
 # writes 65 to stdout
 # also captures the initial continuation as 'capture.continuation'
-with_cc(capture, lambda a: add1(a, lambda b: mul5(b, lambda c: print(c))))(12)
+withcc(capture, lambda a: add1(a, lambda b: mul5(b, lambda c: print(c))))(12)
 
 # same as add1(10, lambda a: mul5(a, print))
 # writes 55 to stdout
