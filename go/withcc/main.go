@@ -2,42 +2,42 @@ package main
 
 import "fmt"
 
-type continuation[T any] struct {
-	f func(...T)
+type capture[T any] struct {
+	continuation func(T)
 }
 
-func (c continuation[T]) call(input ...T) {
-	if c.f != nil {
-		c.f(input...)
+func (c capture[T]) recall(input T) {
+	if c.continuation != nil {
+		c.continuation(input)
 	}
 }
 
-func withcc[T any](c *continuation[T], f func(...T)) func(...T) {
-	c.f = f
-	return f
+func withcc[T any](c *capture[T], continuation func(T)) func(T) {
+	c.continuation = continuation
+	return continuation
 }
 
 func main() {
-	add1 := func(cont func(...int), args ...int) {
-		cont(args[0] + 1)
+	add1 := func(value int, continuation func(int)) {
+		continuation(value + 1)
 	}
 
-	mul5 := func(cont func(...int), args ...int) {
-		cont(args[0] * 5)
+	mul5 := func(value int, continuation func(int)) {
+		continuation(value * 5)
 	}
 
-	capturedContinuation := new(continuation[int])
+	capture := new(capture[int])
 
 	// prints 65
-	withcc[int](capturedContinuation, func(outerParams ...int) {
-		add1(func(add1Results ...int) {
-			mul5(func(mul5Results ...int) {
-				fmt.Printf("%v\n", mul5Results[0])
-			}, add1Results...)
-		}, outerParams...)
+	withcc(capture, func(withccArg int) {
+		add1(withccArg, func(add1Result int) {
+			mul5(add1Result, func(mul5Result int) {
+				fmt.Printf("%v\n", mul5Result)
+			})
+		})
 	})(12)
 
-	capturedContinuation.call(10) // prints 55
-	capturedContinuation.call(3)  // prints 20
-	capturedContinuation.call(4)  // prints 25
+	capture.recall(10) // prints 55
+	capture.recall(3)  // prints 20
+	capture.recall(4)  // prints 25
 }
