@@ -2,20 +2,18 @@ package main
 
 import "fmt"
 
-type capture[T any] struct {
-	continuation func() optional[T]
+type continuation[T any] func() result[T]
+
+type result[T any] struct {
+	value        T
+	continuation *continuation[T]
 }
 
-type optional[T any] struct {
-	value   T
-	capture *capture[T]
-}
-
-func recurse[T any](c func() optional[T]) T {
-	result := c()
+func recurse[T any](continuation continuation[T]) T {
+	result := continuation()
 	for {
-		if result.capture != nil {
-			result = result.capture.continuation()
+		if result.continuation != nil {
+			result = (*result.continuation)()
 		} else {
 			break
 		}
@@ -23,22 +21,28 @@ func recurse[T any](c func() optional[T]) T {
 	return result.value
 }
 
-func fib(a uint64, b uint64, counter uint64, limit uint64) optional[uint64] {
+func nextContinuation[T any](continuation continuation[T]) result[T] {
+	return result[T]{continuation: &continuation}
+}
+
+func finalValue[T any](value T) result[T] {
+	return result[T]{value: value}
+}
+
+func fib(a uint64, b uint64, counter uint64, limit uint64) result[uint64] {
 	if limit == 0 {
-		return optional[uint64]{value: 0}
+		return finalValue(uint64(0))
 	} else if counter < limit {
-		return optional[uint64]{capture: &capture[uint64]{
-			func() optional[uint64] {
-				return fib(b, a+b, counter+1, limit)
-			},
-		}}
+		return nextContinuation(func() result[uint64] {
+			return fib(b, a+b, counter+1, limit)
+		})
 	} else {
-		return optional[uint64]{value: b}
+		return finalValue(b)
 	}
 }
 
 func main() {
-	fmt.Printf("%v\n", recurse(func() optional[uint64] {
+	fmt.Printf("%v\n", recurse(func() result[uint64] {
 		return fib(0, 1, 1, 2000)
 	}))
 }
