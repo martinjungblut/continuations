@@ -29,11 +29,11 @@ def enable_tco(callback):
 def cps_fibonacci(limit, a=0, b=1, counter=1):
     if limit == 0:
         return 0
-    elif counter < limit:
-        return cps_fibonacci.recurse(limit, b, b + a, counter + 1)
-    else:
+    elif counter == limit:
         return b
+    else:
+        return cps_fibonacci.recurse(limit, b, b + a, counter + 1)
 
 
 print("CPS-based TCO")
-print(cps_fibonacci(5000))
+print(cps_fibonacci(2000))

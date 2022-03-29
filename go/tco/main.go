@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/big"
+)
 
 type continuation[T any] func() result[T]
 
@@ -29,20 +32,26 @@ func finalValue[T any](value T) result[T] {
 	return result[T]{value: value}
 }
 
-func fib(a uint64, b uint64, counter uint64, limit uint64) result[uint64] {
-	if limit == 0 {
-		return finalValue(uint64(0))
-	} else if counter < limit {
-		return nextContinuation(func() result[uint64] {
-			return fib(b, a+b, counter+1, limit)
-		})
-	} else {
+func fib(a *big.Int, b *big.Int, counter *big.Int, limit *big.Int) result[*big.Int] {
+	zero, one := big.NewInt(0), big.NewInt(1)
+
+	if limit.Cmp(zero) == 0 {
+		return finalValue(zero)
+	} else if counter.Cmp(limit) == 0 {
 		return finalValue(b)
+	} else {
+		return nextContinuation(func() result[*big.Int] {
+			return fib(b, a.Add(a, b), counter.Add(counter, one), limit)
+		})
 	}
 }
 
 func main() {
-	fmt.Printf("%v\n", recurse(func() result[uint64] {
-		return fib(0, 1, 1, 2000)
+	fmt.Printf("%v\n", recurse(func() result[*big.Int] {
+		a, b := big.NewInt(0), big.NewInt(1)
+		counter := big.NewInt(1)
+		limit := big.NewInt(2000)
+
+		return fib(a, b, counter, limit)
 	}))
 }
