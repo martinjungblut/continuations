@@ -46,12 +46,25 @@ func fib(a *big.Int, b *big.Int, counter *big.Int, limit *big.Int) result[*big.I
 	}
 }
 
+func factorial(n *big.Int, acc *big.Int) result[*big.Int] {
+	zero, one := big.NewInt(0), big.NewInt(1)
+
+	if acc == nil {
+		acc = big.NewInt(1)
+	}
+
+	if n.Cmp(zero) == 0 || n.Cmp(one) == 0 {
+		return finalValue(acc)
+	} else {
+		return nextContinuation(func() result[*big.Int] {
+			return factorial(new(big.Int).Sub(n, one), acc.Mul(acc, n))
+		})
+	}
+}
+
 func main() {
 	fmt.Printf("%v\n", recurse(func() result[*big.Int] {
-		a, b := big.NewInt(0), big.NewInt(1)
-		counter := big.NewInt(1)
-		limit := big.NewInt(2000)
-
-		return fib(a, b, counter, limit)
+		n := big.NewInt(5)
+		return factorial(n, nil)
 	}))
 }
