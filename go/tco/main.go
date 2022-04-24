@@ -12,12 +12,8 @@ type result[T any] struct {
 
 func recurse[T any](continuation func() result[T]) T {
 	result := continuation()
-	for {
-		if result.continuation != nil {
-			result = result.continuation()
-		} else {
-			break
-		}
+	for result.continuation != nil {
+		result = result.continuation()
 	}
 	return result.value
 }
@@ -47,5 +43,5 @@ func factorial(n *big.Int, acc *big.Int) func() result[*big.Int] {
 }
 
 func main() {
-	fmt.Printf("%v\n", recurse(factorial(big.NewInt(5), nil)))
+	fmt.Printf("%v\n", recurse(factorial(big.NewInt(125000), nil)))
 }
